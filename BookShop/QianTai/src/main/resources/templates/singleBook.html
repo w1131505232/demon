@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>图书详情</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous"/>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+</head>
+<body>
+
+
+<!--使用抽取的公共头部-->
+<div th:insert="publicHeader.html"></div>
+<script th:src="@{/publicHeader.js}"></script>
+
+
+
+<div class="container-fluid" id="app" style="margin-top: 180px;margin-bottom: 100px">
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="thumbnail">
+                <img :src="bookInfo.imgsrc" alt="...">
+            </div>
+        </div>
+        <div class= "col-md-8">
+            <p>书名 : <span v-text="bookInfo.name"></span></p>
+            <p>作者 : <span v-text="bookInfo.author" ></span></p>
+            <p>出版社 : <span v-text="bookInfo.provider" ></span></p>
+            <p>价格 : <span v-text="bookInfo.price" ></span></p>
+            <p>阅读量 : <span v-text="bookInfo.readcount" ></span></p>
+            <p>简介 : <span v-text="bookInfo.detail" ></span></p>
+            <br/>
+            <br/>
+            <br/>
+            <a class="btn btn-success" >加入购物车</a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+    console.log("------singleBook-----")
+
+    let app = new Vue({
+        el:"#app",
+        data:{
+            bookId:-1,
+            bookInfo:{}
+
+        },
+        methods:{
+            initBookInfo(){
+
+                let vueObj = this;
+
+                $.post("/book/detail",{bookId:this.bookId},function (data) {
+                    console.log(data)
+                    vueObj.bookInfo = data;
+                })
+
+            }
+        },
+        created(){
+            let bookId = sessionStorage.getItem("toSeeDetailBookId");
+            console.log(bookId)
+            this.bookId = bookId;
+
+            this.initBookInfo();
+        }
+    })
+
+</script>
+
+
+<div th:insert="publicFooter.html"></div>
+
+
+</body>
+</html>

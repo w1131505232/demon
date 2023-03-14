@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>主页</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.3/jquery.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+</head>
+<body>
+
+
+爷是主页
+<span th:text="${msg}"></span>
+
+<hr/>
+
+<div id="app">
+
+    {{vueMsg}} <br/>
+    <button @click="alertvueMsg">查看消息</button> <br/>
+<!--    <a href="xxxx" @click="hitA">你来打我呀</a> <br/>-->
+    <!-- @click.prevent 只响应点击事件, 阻止元素默认行为 -->
+    <a href="xxxx" @click.prevent="hitA">你来打我呀</a> <br/>
+    <button @click="sendAjax">sendAjax</button> <br/>
+    <button @click="sendAjaxGet">sendAjaxGet</button> <br/>
+    <button @click="sendAjaxPost">sendAjaxPost</button> <br/>
+    <button @click="getUsers">getUsers</button> <br/>
+
+    <ol>
+        <!--    for(item :  friends)   v-text代表当前元素要显示的文本     -->
+        <li v-for="item in friends" v-text="item"></li>
+    </ol>
+
+
+    <ol>
+        <!--    for(user :  userList)   v-text代表当前元素要显示的文本     -->
+        <li v-for="user in userList" >{{user.id}}-{{user.name}}-{{user.age}}-{{user.email}}</li>
+    </ol>
+
+
+
+
+</div>
+
+<script>
+
+    let vueObj = new Vue({
+       el:"#app",   //当前vue对象和id为app的html元素绑定到一起,该元素被vue托管
+        data:{   //属性
+           vueMsg: '我是vue对象里的消息',
+            friends: ['玉帝','皇帝','阎王'],
+            userList: []
+        }
+        ,
+        methods:{ //方法
+            // alertvueMsg:function (){
+            alertvueMsg(){
+                alert(this.vueMsg)
+            },
+            hitA(){
+                alert("哎呦好痛")
+            },
+            sendAjax(){
+
+                console.log("-----before------")
+
+                $.ajax({
+                    async: true, //指定当前请求是否异步执行  asynchronous的缩写
+                    // async: false, //指定当前请求是否异步执行  asynchronous的缩写
+                    url: '/allUsers' ,//请求地址
+                    type: 'GET',  //请求的方式 一般是 get 或者 post
+                    data: {id:3},   //本次请求携带的数据
+                    timeout: 30000, //30s内请求没有完成就认为超时
+                    success: function (data) {  //请求成功时调用
+                        console.log(data)
+                    },
+                    error: function (error) {//请求失败时调用
+                        console.log(error)
+                    },
+                    complete: function (result){//请求完成时调用
+                        console.log(result)
+                    }
+                });
+
+                console.log("-----after------")
+
+
+            }
+            ,
+            sendAjaxGet(){
+                // $.get("/allUsers",{id:666},function (data) {
+                $.get("/allUsers",function (data) {
+                    console.log(data)
+                })
+            }
+            ,
+            sendAjaxPost(){
+                // $.post("/allUsers",{id:666},function (data) {
+                $.post("/allUsers",function (data) {
+                    console.log(data)
+                })
+            }
+            ,
+            getUsers(){
+
+                let vueObj = this;   //因为在ajax方法里this名字冲突了,所以我们起个别名
+                //let _this = this;
+                console.log("外部的this "+this)
+                console.log(this)  //这里的this代表的是vue对象
+
+                //1.拿数据
+                $.get("/allUsers",function (data) {
+                    console.log(data)
+                    console.log(this)  //这里的是this是ajax请求对象
+                    vueObj.userList = data;
+                })
+
+
+                //2.数据显示出来
+            }
+
+        },
+        // created:function (){
+        created(){  //vue生命周期中的方法   在vue对象创建完成的时候被调用
+           this.getUsers();
+        }
+    });
+
+    //vueObj.getUsers();
+
+    console.log(vueObj)
+
+</script>
+
+
+</body>
+</html>

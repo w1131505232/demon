@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>分类查看</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous"/>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+</head>
+<body>
+
+
+<!--使用抽取的公共头部-->
+<div th:insert="publicHeader.html"></div>
+<script th:src="@{/publicHeader.js}"></script>
+
+
+
+<div class="container-fluid" id="app" style="margin-top: 180px;margin-bottom: 100px">
+
+    <div class="container col-md-12" v-if="pageData.total<1">
+        <h3 style="text-align: center">暂无 {{bookTypeInfo.name}} 类图书</h3>
+    </div>
+
+    <div class="container" v-if="pageData.total>0">
+
+        <div class="row">
+            <div class="col-md-12">
+                <p style="background-color: cornflowerblue ; color: white; font-size: 30px"> {{bookTypeInfo.name}} 类图书</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6 col-md-4" v-for="book in pageData.records">
+                <div class="thumbnail">
+                    <img :src="book.imgsrc" alt="..." class="col-sm-6 col-md-6" style="width: 140px;height: 130px">
+                    <div class="caption text-left">
+                        <p>书名:<span v-text="book.name" >name</span></p>
+                        <p>价格:<span v-text="book.price">price</span></p>
+                        <p>热销量:<span v-text="book.buycount">buycount</span></p>
+                        <p>
+                            <a class="btn btn-primary" @click.prevent="seeDetail(book.id)" >详情</a> &nbsp;&nbsp;&nbsp;&nbsp;
+                            <a class="btn btn-success" >加入购物车</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 col-md-offset-5 col-lg-offset-4col-xl-offset-5" >
+                <ul class="pagination justify-content-center">
+                    <li><a href="" @click.prevent = "goPage(pageData.current-1)" >上一页</a></li>
+                    <li><a href="" v-for="num in pageData.pages" v-text="num" @click.prevent = "goPage(num)" >n</a></li>
+                    <li><a href="" @click.prevent = "goPage(pageData.current+1)">下一页</a></li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+
+<script>
+
+    console.log("------booksOfType-----")
+
+    let app = new Vue({
+        el:"#app",
+        data:{
+            bookTypeId:-1,
+            bookTypeInfo:{},
+            pageData:{
+                current:1,
+                size:3,
+                total:-1,
+                records:[],
+                pages:-1
+            }
+
+        },
+        methods:{
+            initBookTypeInfo(){
+                let vueObj = this;
+                $.get("/booktype/detail",{bookTypeId:this.bookTypeId},function (data) {
+                    console.log(data)
+                    vueObj.bookTypeInfo = data;
+                })
+            }
+            ,
+            initPageData(){
+                let vueObj = this;
+                let params = {
+                    currentPage:this.pageData.current,
+                    pageSize: this.pageData.size,
+                    typeId: this.bookTypeId
+                }
+                $.post("/book/pageByType",params,function (data) {
+                    console.log(data)
+                    vueObj.pageData = data;
+                })
+            }
+            ,
+            seeDetail(bookId){
+                console.log("去查看"+bookId+"详情")
+                sessionStorage.setItem("toSeeDetailBookId",bookId)
+                location.href="/singleBook.html"
+            }
+            ,
+            goPage(pageNum){
+                if (pageNum<1 || pageNum >this.pageData.pages || pageNum==this.pageData.current){
+                    console.log("无效pageNum "+pageNum);
+                    return
+                }
+
+                this.pageData.current = pageNum;
+                this.initPageData();
+            }
+        },
+        created(){
+           let bookTypeId = sessionStorage.getItem("seeBooksOfType");
+           console.log(bookTypeId)
+
+            this.bookTypeId = bookTypeId;
+
+           this.initBookTypeInfo();
+
+           this.initPageData();
+
+        }
+    })
+
+</script>
+
+
+<div th:insert="publicFooter.html"></div>
+
+
+</body>
+</html>
